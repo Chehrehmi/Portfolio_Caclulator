@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>IRA Performance & Fee Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@latest/dist/chart.umd.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,161 +12,846 @@
       padding: 20px;
     }
     .container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: auto;
       background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     h1 {
-      font-size: 24px;
+      font-size: 28px;
+      margin-bottom: 25px;
+      color: #1f2937;
+    }
+    .instructions {
       margin-bottom: 20px;
+      padding: 15px;
+      background: #eff6ff;
+      border-radius: 8px;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      font-size: 15px;
+    }
+    .instructions ul {
+      margin-top: 10px;
+      padding-left: 20px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
     th, td {
-      border: 1px solid #ddd;
-      padding: 6px;
+      border: 1px solid #d1d5db;
+      padding: 10px;
       text-align: center;
       font-size: 14px;
     }
     th {
       background: #f3f4f6;
+      font-weight: 600;
+      color: #374151;
     }
     input {
-      width: 90%;
-      padding: 4px;
+      width: 95%;
+      padding: 6px;
       text-align: center;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
     }
     .buttons {
       display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
+      gap: 12px;
+      margin-bottom: 20px;
     }
     button {
       background: #2563eb;
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 6px;
       cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
     }
     button:hover {
       background: #1e40af;
     }
-    .results {
-      margin-top: 20px;
-      padding: 12px;
-      border-radius: 6px;
-      background: #f3f4f6;
+    button.delete {
+      background: #ef4444;
+      padding: 6px 12px;
     }
-    .results p { margin: 6px 0; }
+    button.delete:hover {
+      background: #b91c1c;
+    }
+    .results {
+      margin-top: 25px;
+      padding: 15px;
+      border-radius: 8px;
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .results p { 
+      margin: 8px 0;
+      font-size: 15px;
+    }
+    .insights {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    .insights h2 {
+      font-size: 22px;
+      margin-bottom: 15px;
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .insight-card {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 15px;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .insight-card h3 {
+      font-size: 14px;
+      margin: 0 0 8px 0;
+      opacity: 0.9;
+      font-weight: 500;
+    }
+    .insight-card p {
+      font-size: 18px;
+      margin: 0;
+      font-weight: 600;
+    }
+    .insight-icon {
+      font-size: 24px;
+    }
+    .trend-up { color: #22c55e; }
+    .trend-down { color: #ef4444; }
+    .trend-neutral { color: #f59e0b; }
+    .formulas {
+      margin-top: 30px;
+      padding: 15px;
+      border-radius: 8px;
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
+    }
+    .formulas h2 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #1f2937;
+    }
+    .formulas ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    .formulas li {
+      margin-bottom: 15px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .formulas code {
+      background: #e5e7eb;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .charts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .chart-wrapper {
+      flex: 1;
+      min-width: 400px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .chart-container {
+      height: 300px;
+      margin-top: 10px;
+    }
+    .chart-description {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .chart-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 5px;
+    }
+    .legend-guide {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fef3c7;
+      border-radius: 8px;
+      border: 1px solid #fbbf24;
+    }
+    .legend-guide h3 {
+      font-size: 16px;
+      margin: 0 0 10px 0;
+      color: #92400e;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+      font-size: 14px;
+      color: #78350f;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+    .warning {
+      color: #ef4444;
+      font-size: 14px;
+      margin-top: -10px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>IRA Performance & Fee Calculator</h1>
 
+    <div class="instructions">
+      <p>Welcome! This tool helps you track your IRA performance easily. Here's how to use it:</p>
+      <ul>
+        <li>Enter your quarter details in the table below.</li>
+        <li>The "Beginning Balance" for a new quarter is automatically set to the previous quarter's "Ending Balance".</li>
+        <li>Click "+ Add Row" to add more quarters.</li>
+        <li>Click "Link Balances" if you need to sync beginning balances after changes.</li>
+        <li>Click "Analyze Data" to calculate results and view charts.</li>
+        <li>You can delete a quarter using the "Delete" button in the row.</li>
+        <li>All fields are numeric except the quarter name. Use decimals for precise amounts.</li>
+      </ul>
+    </div>
+
     <!-- Input + Output Table -->
     <table id="dataTable">
       <thead>
         <tr>
-          <th>Quarter</th>
-          <th>Balance ($)</th>
-          <th>Deposits ($)</th>
-          <th>Fees ($)</th>
-          <th>Net Gain ($)</th>
-          <th>Net After Fees ($)</th>
-          <th>Return %</th>
+          <th title="The quarter identifier, e.g., 2022 Q3">Quarter</th>
+          <th title="Balance at the start of the quarter">Beginning Balance ($)</th>
+          <th title="Total deposits made during the quarter">Deposits ($)</th>
+          <th title="Balance at the end of the quarter">Ending Balance ($)</th>
+          <th title="Positive change in value (excluding deposits)">Net Gain ($)</th>
+          <th title="Negative change in value (excluding deposits)">Net Loss ($)</th>
+          <th title="Fees incurred during the quarter">Fees ($)</th>
+          <th title="Net change after deducting fees">Net After Fees ($)</th>
+          <th title="Percentage return for the quarter">Return %</th>
+          <th title="Actions for the row">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><input type="text" value="2022 Q3"></td>
-          <td><input type="number" value="125000"></td>
-          <td><input type="number" value="100000"></td>
-          <td><input type="number" value="312.5"></td>
+          <td><input type="text" class="quarter" value="2022 Q3"></td>
+          <td><input type="number" step="0.01" class="beginBalance" value="0"></td>
+          <td><input type="number" step="0.01" class="deposits" value="100000"></td>
+          <td><input type="number" step="0.01" class="endingBalance" value="125000"></td>
           <td class="netGain">–</td>
+          <td class="netLoss">–</td>
+          <td><input type="number" step="0.01" class="fees" value="312.5"></td>
           <td class="netAfterFees">–</td>
           <td class="returnPct">–</td>
+          <td><button class="delete" onclick="deleteRow(this)">Delete</button></td>
         </tr>
         <tr>
-          <td><input type="text" value="2022 Q4"></td>
-          <td><input type="number" value="118000"></td>
-          <td><input type="number" value="5000"></td>
-          <td><input type="number" value="295"></td>
+          <td><input type="text" class="quarter" value="2022 Q4"></td>
+          <td><input type="number" step="0.01" class="beginBalance" value="125000"></td>
+          <td><input type="number" step="0.01" class="deposits" value="5000"></td>
+          <td><input type="number" step="0.01" class="endingBalance" value="118000"></td>
           <td class="netGain">–</td>
+          <td class="netLoss">–</td>
+          <td><input type="number" step="0.01" class="fees" value="295"></td>
           <td class="netAfterFees">–</td>
           <td class="returnPct">–</td>
+          <td><button class="delete" onclick="deleteRow(this)">Delete</button></td>
         </tr>
       </tbody>
     </table>
 
     <!-- Action Buttons -->
     <div class="buttons">
-      <button onclick="addRow()">+ Add Row</button>
-      <button onclick="analyzeData()">Analyze Data</button>
+      <button title="Add a new quarter row" onclick="addRow()">+ Add Row</button>
+      <button title="Sync beginning balances with previous ending balances" onclick="linkBalances()">Link Balances</button>
+      <button title="Calculate results and update charts" onclick="analyzeData()">Analyze Data</button>
     </div>
+
+    <div id="warning" class="warning"></div>
 
     <!-- Totals -->
     <div class="results" id="results"></div>
+
+    <!-- Key Insights -->
+    <div class="insights" id="insights" style="display: none;">
+      <h2><span class="insight-icon">💡</span> Key Insights</h2>
+      <div class="insights-grid" id="insightsGrid"></div>
+    </div>
+
+    <!-- Legend Guide -->
+    <div class="legend-guide">
+      <h3>📊 Chart Color Guide</h3>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #22c55e;"></div>
+        <span><strong>Green:</strong> Positive gains, profitable quarters, or upward trends</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #ef4444;"></div>
+        <span><strong>Red:</strong> Losses, fees, or declining performance</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #3b82f6;"></div>
+        <span><strong>Blue:</strong> Balance values and overall account value</span>
+      </div>
+    </div>
+
+    <!-- Formula Breakdown -->
+    <div class="formulas" id="formulas">
+      <h2>Formula Breakdown</h2>
+      <ul>
+        <li><strong>Gross Change:</strong> Calculated as <code>Ending Balance - Beginning Balance - Deposits</code>. This represents the raw change in value excluding deposits.</li>
+        <li><strong>Net Gain:</strong> If Gross Change > 0, then Net Gain = Gross Change; else 0. Displays the positive growth for the quarter.</li>
+        <li><strong>Net Loss:</strong> If Gross Change < 0, then Net Loss = -Gross Change; else 0. Displays the absolute value of any loss for the quarter.</li>
+        <li><strong>Net After Fees:</strong> Calculated as <code>Gross Change - Fees</code>. This is the net performance after deducting fees.</li>
+        <li><strong>Return % (Quarterly):</strong> Calculated as <code>(Net After Fees / (Beginning Balance + Deposits)) * 100</code>. Represents the percentage return for the quarter based on the invested amount.</li>
+        <li><strong>Overall Return:</strong> Calculated as <code>(Total Net After Fees / (Initial Balance + Total Deposits)) * 100</code>. The cumulative return across all quarters.</li>
+      </ul>
+    </div>
+
+    <!-- Visualizations -->
+    <div class="charts">
+      <div class="chart-wrapper">
+        <div class="chart-title">Balance and Return Over Time</div>
+        <div class="chart-container">
+          <canvas id="balanceChart"></canvas>
+        </div>
+        <div class="chart-description">
+          <strong>What to look for:</strong> The blue line shows how your account balance grows over time. The green line shows your quarterly return percentage. Look for upward trends in both lines – this indicates healthy growth. If the balance line goes up but the return line goes down, you're growing mainly through deposits rather than investment gains.
+        </div>
+      </div>
+      
+      <div class="chart-wrapper">
+        <div class="chart-title">Net Gain/Loss per Quarter</div>
+        <div class="chart-container">
+          <canvas id="gainsChart"></canvas>
+        </div>
+        <div class="chart-description">
+          <strong>What to look for:</strong> Green bars show profitable quarters, red bars show losses. Taller bars mean bigger changes (good or bad). If you see mostly green bars, your investments are performing well. Red bars aren't always bad – they're normal during market downturns. Look at the overall pattern: more green than red is positive.
+        </div>
+      </div>
+      
+      <div class="chart-wrapper">
+        <div class="chart-title">Totals Breakdown</div>
+        <div class="chart-container">
+          <canvas id="totalsChart"></canvas>
+        </div>
+        <div class="chart-description">
+          <strong>What to look for:</strong> This shows your complete performance summary. The first bar (Gains) shows total profits. The second (Losses, shown as negative) shows total losses. The third (Fees) shows what you paid in fees. The fourth bar (Net After Fees) is your actual profit or loss. Ideally, your Net After Fees bar should be green and tall, indicating strong overall returns.
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     function addRow() {
       const tableBody = document.querySelector("#dataTable tbody");
+      const rows = tableBody.querySelectorAll("tr");
+      let prevEnding = 0;
+      if (rows.length > 0) {
+        const lastRow = rows[rows.length - 1];
+        const endingInput = lastRow.querySelector(".endingBalance");
+        prevEnding = parseFloat(endingInput.value) || 0;
+      }
       const newRow = document.createElement("tr");
-
       newRow.innerHTML = `
-        <td><input type="text" placeholder="Quarter"></td>
-        <td><input type="number" placeholder="Balance"></td>
-        <td><input type="number" placeholder="Deposits"></td>
-        <td><input type="number" placeholder="Fees"></td>
+        <td><input type="text" class="quarter" placeholder="Quarter"></td>
+        <td><input type="number" step="0.01" class="beginBalance" value="${prevEnding.toFixed(2)}"></td>
+        <td><input type="number" step="0.01" class="deposits" placeholder="Deposits"></td>
+        <td><input type="number" step="0.01" class="endingBalance" placeholder="Ending Balance"></td>
         <td class="netGain">–</td>
+        <td class="netLoss">–</td>
+        <td><input type="number" step="0.01" class="fees" placeholder="Fees"></td>
         <td class="netAfterFees">–</td>
         <td class="returnPct">–</td>
+        <td><button class="delete" onclick="deleteRow(this)">Delete</button></td>
       `;
-
       tableBody.appendChild(newRow);
+    }
+
+    function deleteRow(el) {
+      const rows = document.querySelectorAll("#dataTable tbody tr");
+      if (rows.length <= 1) {
+        alert("Cannot delete the last row.");
+        return;
+      }
+      el.closest('tr').remove();
+    }
+
+    function linkBalances() {
+      const rows = document.querySelectorAll("#dataTable tbody tr");
+      let prevEnding = 0;
+      rows.forEach((row, index) => {
+        if (index > 0) {
+          row.querySelector(".beginBalance").value = prevEnding.toFixed(2);
+        }
+        prevEnding = parseFloat(row.querySelector(".endingBalance").value) || 0;
+      });
+      document.getElementById("warning").textContent = "Balances linked successfully.";
+      setTimeout(() => { document.getElementById("warning").textContent = ""; }, 3000);
     }
 
     function analyzeData() {
       const rows = document.querySelectorAll("#dataTable tbody tr");
-      let totalBalance = 0, totalDeposits = 0, totalFees = 0;
+      if (rows.length === 0) {
+        alert("No data to analyze.");
+        return;
+      }
+      let totalDeposits = 0;
+      let totalFees = 0;
+      let totalNetAfterFees = 0;
+      let totalNetGains = 0;
+      let totalNetLosses = 0;
+      let currentBalance = 0;
+      let firstBegin = parseFloat(rows[0].querySelector(".beginBalance").value) || 0;
+      let prevEnding = firstBegin;
+      let quarters = [];
+      let endings = [];
+      let returns = [];
+      let netChanges = [];
+      let mismatches = false;
+      let quarterData = [];
 
-      rows.forEach(row => {
-        const cells = row.querySelectorAll("td");
-        const balance = parseFloat(cells[1].querySelector("input").value) || 0;
-        const deposit = parseFloat(cells[2].querySelector("input").value) || 0;
-        const fees = parseFloat(cells[3].querySelector("input").value) || 0;
+      const formatMoney = (num) => {
+        if (isNaN(num) || num === null) return "–";
+        return "$" + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      };
 
-        totalBalance = balance; // last row = current balance
+      rows.forEach((row, index) => {
+        const begin = parseFloat(row.querySelector(".beginBalance").value) || 0;
+        const deposit = parseFloat(row.querySelector(".deposits").value) || 0;
+        const ending = parseFloat(row.querySelector(".endingBalance").value) || 0;
+        const fees = parseFloat(row.querySelector(".fees").value) || 0;
+
+        if (index > 0 && Math.abs(begin - prevEnding) > 0.01) {
+          mismatches = true;
+        }
+
+        const grossChange = ending - begin - deposit;
+        const netGain = grossChange > 0 ? grossChange : 0;
+        const netLoss = grossChange < 0 ? Math.abs(grossChange) : 0;
+        const netAfterFeesVal = grossChange - fees;
+        const denom = (begin + deposit) || 1;
+        const returnPctVal = (netAfterFeesVal / denom) * 100;
+
+        row.querySelector(".netGain").textContent = netGain > 0 ? formatMoney(netGain) : "–";
+        row.querySelector(".netLoss").textContent = netLoss > 0 ? formatMoney(netLoss) : "–";
+        row.querySelector(".netAfterFees").textContent = formatMoney(netAfterFeesVal);
+        row.querySelector(".returnPct").textContent = isFinite(returnPctVal) ? returnPctVal.toFixed(2) + "%" : "–";
+
         totalDeposits += deposit;
         totalFees += fees;
+        totalNetAfterFees += netAfterFeesVal;
+        totalNetGains += netGain;
+        totalNetLosses += netLoss;
+        currentBalance = ending;
+        prevEnding = ending;
 
-        // Row-level calculations
-        const netGain = balance - deposit;
-        const netAfterFees = balance - deposit - fees;
-        const returnPct = deposit > 0 ? ((balance - deposit - fees) / deposit) * 100 : 0;
-
-        cells[4].textContent = "$" + netGain.toLocaleString(undefined,{maximumFractionDigits:0});
-        cells[5].textContent = "$" + netAfterFees.toLocaleString(undefined,{maximumFractionDigits:0});
-        cells[6].textContent = returnPct.toFixed(2) + "%";
+        const quarterName = row.querySelector(".quarter").value || `Quarter ${index + 1}`;
+        quarters.push(quarterName);
+        endings.push(ending);
+        returns.push(isFinite(returnPctVal) ? returnPctVal : null);
+        netChanges.push(netGain - netLoss);
+        
+        quarterData.push({
+          quarter: quarterName,
+          return: returnPctVal,
+          netAfterFees: netAfterFeesVal,
+          netGain: netGain,
+          netLoss: netLoss
+        });
       });
 
-      const netOverall = totalBalance - totalDeposits - totalFees;
-      const overallReturn = totalDeposits > 0 ? (netOverall / totalDeposits) * 100 : 0;
+      if (mismatches) {
+        document.getElementById("warning").textContent = "Warning: Some beginning balances do not match previous ending balances. Use 'Link Balances' if needed.";
+      } else {
+        document.getElementById("warning").textContent = "";
+      }
+
+      const overallDenom = (firstBegin + totalDeposits) || 1;
+      const overallReturn = (totalNetAfterFees / overallDenom) * 100;
 
       document.getElementById("results").innerHTML = `
-        <p><b>Current Balance:</b> $${totalBalance.toLocaleString()}</p>
-        <p><b>Total Deposits:</b> $${totalDeposits.toLocaleString()}</p>
-        <p><b>Total Fees:</b> $${totalFees.toLocaleString()}</p>
-        <p><b>Net Return:</b> ${overallReturn.toFixed(2)}%</p>
+        <p><b>Initial Balance:</b> ${formatMoney(firstBegin)}</p>
+        <p><b>Current Balance:</b> ${formatMoney(currentBalance)}</p>
+        <p><b>Total Deposits:</b> ${formatMoney(totalDeposits)}</p>
+        <p><b>Total Fees:</b> ${formatMoney(totalFees)}</p>
+        <p><b>Total Net Gains:</b> ${formatMoney(totalNetGains)}</p>
+        <p><b>Total Net Losses:</b> ${formatMoney(totalNetLosses)}</p>
+        <p><b>Net Overall After Fees:</b> ${formatMoney(totalNetAfterFees)}</p>
+        <p><b>Overall Return:</b> ${isFinite(overallReturn) ? overallReturn.toFixed(2) + "%" : "–"}</p>
       `;
+
+      // Generate insights
+      generateInsights(quarterData, totalNetAfterFees, overallReturn, totalFees, totalNetGains, totalNetLosses, currentBalance, firstBegin);
+
+      // Destroy existing charts to prevent overlap
+      if (window.balanceChart && typeof window.balanceChart.destroy === 'function') {
+        window.balanceChart.destroy();
+      }
+      if (window.gainsChart && typeof window.gainsChart.destroy === 'function') {
+        window.gainsChart.destroy();
+      }
+      if (window.totalsChart && typeof window.totalsChart.destroy === 'function') {
+        window.totalsChart.destroy();
+      }
+
+      // Balance and Return Chart
+      const ctxBalance = document.getElementById("balanceChart").getContext("2d");
+      window.balanceChart = new Chart(ctxBalance, {
+        type: "line",
+        data: {
+          labels: quarters,
+          datasets: [
+            {
+              label: "Ending Balance",
+              data: endings,
+              borderColor: "#3b82f6",
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              yAxisID: "y",
+              fill: true,
+              tension: 0.3,
+              borderWidth: 3
+            },
+            {
+              label: "Return %",
+              data: returns,
+              borderColor: "#22c55e",
+              backgroundColor: "rgba(34, 197, 94, 0.1)",
+              yAxisID: "y1",
+              fill: true,
+              tension: 0.3,
+              borderWidth: 3
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    if (context.dataset.label === 'Ending Balance') {
+                      label += '$' + context.parsed.y.toLocaleString();
+                    } else {
+                      label += context.parsed.y.toFixed(2) + '%';
+                    }
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              type: "linear",
+              position: "left",
+              title: { display: true, text: "Balance ($)", font: { weight: 'bold' } },
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              }
+            },
+            y1: {
+              type: "linear",
+              position: "right",
+              title: { display: true, text: "Return %", font: { weight: 'bold' } },
+              grid: { drawOnChartArea: false },
+              ticks: {
+                callback: function(value) {
+                  return value.toFixed(1) + '%';
+                }
+              }
+            },
+          },
+        },
+      });
+
+      // Gains/Losses Bar Chart
+      const ctxGains = document.getElementById("gainsChart").getContext("2d");
+      window.gainsChart = new Chart(ctxGains, {
+        type: "bar",
+        data: {
+          labels: quarters,
+          datasets: [
+            {
+              label: "Net Gain/Loss",
+              data: netChanges,
+              backgroundColor: netChanges.map(val => val >= 0 ? "rgba(34, 197, 94, 0.8)" : "rgba(239, 68, 68, 0.8)"),
+              borderColor: netChanges.map(val => val >= 0 ? "#22c55e" : "#ef4444"),
+              borderWidth: 2
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += '$' + context.parsed.y.toLocaleString();
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            y: { 
+              title: { display: true, text: "Amount ($)", font: { weight: 'bold' } },
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              }
+            },
+          },
+        },
+      });
+
+      // Totals Bar Chart
+      const ctxTotals = document.getElementById("totalsChart").getContext("2d");
+      const totalsData = [totalNetGains, -totalNetLosses, -totalFees, totalNetAfterFees];
+      const totalsLabels = ["Gains", "Losses", "Fees", "Net After Fees"];
+      const totalsColors = [
+        "rgba(34, 197, 94, 0.8)",
+        "rgba(239, 68, 68, 0.8)",
+        "rgba(239, 68, 68, 0.8)",
+        totalNetAfterFees >= 0 ? "rgba(34, 197, 94, 0.8)" : "rgba(239, 68, 68, 0.8)"
+      ];
+      const borderColors = [
+        "#22c55e",
+        "#ef4444",
+        "#ef4444",
+        totalNetAfterFees >= 0 ? "#22c55e" : "#ef4444"
+      ];
+      window.totalsChart = new Chart(ctxTotals, {
+        type: "bar",
+        data: {
+          labels: totalsLabels,
+          datasets: [
+            {
+              label: "Totals",
+              data: totalsData,
+              backgroundColor: totalsColors,
+              borderColor: borderColors,
+              borderWidth: 2
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += '$' + Math.abs(context.parsed.y).toLocaleString();
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            y: { 
+              title: { display: true, text: "Amount ($)", font: { weight: 'bold' } },
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              }
+            },
+          },
+        },
+      });
+    }
+
+    function generateInsights(quarterData, totalNetAfterFees, overallReturn, totalFees, totalNetGains, totalNetLosses, currentBalance, initialBalance) {
+      const insightsDiv = document.getElementById("insights");
+      const insightsGrid = document.getElementById("insightsGrid");
+      
+      insightsDiv.style.display = "block";
+      insightsGrid.innerHTML = "";
+
+      // Find best and worst quarters
+      let bestQuarter = { quarter: "N/A", return: -Infinity };
+      let worstQuarter = { quarter: "N/A", return: Infinity };
+      let totalReturn = 0;
+      let validReturns = 0;
+      
+      quarterData.forEach(q => {
+        if (isFinite(q.return)) {
+          if (q.return > bestQuarter.return) {
+            bestQuarter = { quarter: q.quarter, return: q.return };
+          }
+          if (q.return < worstQuarter.return) {
+            worstQuarter = { quarter: q.quarter, return: q.return };
+          }
+          totalReturn += q.return;
+          validReturns++;
+        }
+      });
+
+      const avgReturn = validReturns > 0 ? totalReturn / validReturns : 0;
+      
+      // Calculate trend (last 3 quarters vs first 3 quarters)
+      let trend = "neutral";
+      let trendIcon = "→";
+      let trendClass = "trend-neutral";
+      if (quarterData.length >= 3) {
+        const recentQuarters = quarterData.slice(-3);
+        const earlyQuarters = quarterData.slice(0, Math.min(3, quarterData.length));
+        
+        const recentAvg = recentQuarters.reduce((sum, q) => sum + (isFinite(q.return) ? q.return : 0), 0) / recentQuarters.length;
+        const earlyAvg = earlyQuarters.reduce((sum, q) => sum + (isFinite(q.return) ? q.return : 0), 0) / earlyQuarters.length;
+        
+        if (recentAvg > earlyAvg + 0.5) {
+          trend = "improving";
+          trendIcon = "↗";
+          trendClass = "trend-up";
+        } else if (recentAvg < earlyAvg - 0.5) {
+          trend = "declining";
+          trendIcon = "↘";
+          trendClass = "trend-down";
+        }
+      }
+
+      // Calculate fee percentage
+      const feePercentage = ((totalFees / (initialBalance + totalNetGains + totalNetLosses)) * 100) || 0;
+      
+      // Count profitable quarters
+      const profitableQuarters = quarterData.filter(q => q.netAfterFees > 0).length;
+      const profitRate = ((profitableQuarters / quarterData.length) * 100).toFixed(0);
+
+      // Create insight cards
+      const insights = [
+        {
+          title: "Best Quarter",
+          value: `${bestQuarter.quarter}`,
+          subvalue: isFinite(bestQuarter.return) ? `+${bestQuarter.return.toFixed(2)}%` : "N/A",
+          icon: "🏆"
+        },
+        {
+          title: "Worst Quarter",
+          value: `${worstQuarter.quarter}`,
+          subvalue: isFinite(worstQuarter.return) ? `${worstQuarter.return.toFixed(2)}%` : "N/A",
+          icon: "📉"
+        },
+        {
+          title: "Average Return",
+          value: isFinite(avgReturn) ? `${avgReturn.toFixed(2)}%` : "N/A",
+          subvalue: `per quarter`,
+          icon: "📊"
+        },
+        {
+          title: "Performance Trend",
+          value: trend.charAt(0).toUpperCase() + trend.slice(1),
+          subvalue: `<span class="${trendClass}">${trendIcon}</span>`,
+          icon: "📈"
+        },
+        {
+          title: "Profitable Quarters",
+          value: `${profitableQuarters} of ${quarterData.length}`,
+          subvalue: `${profitRate}% success rate`,
+          icon: "✓"
+        },
+        {
+          title: "Fee Impact",
+          value: `${totalFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          subvalue: `${feePercentage.toFixed(2)}% of gains`,
+          icon: "💰"
+        }
+      ];
+
+      insights.forEach(insight => {
+        const card = document.createElement("div");
+        card.className = "insight-card";
+        card.innerHTML = `
+          <h3>${insight.icon} ${insight.title}</h3>
+          <p>${insight.value}</p>
+          <p style="font-size: 14px; opacity: 0.9; margin-top: 5px;">${insight.subvalue}</p>
+        `;
+        insightsGrid.appendChild(card);
+      });
     }
   </script>
 </body>
