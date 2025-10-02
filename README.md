@@ -58,7 +58,7 @@ The app runs **entirely client-side** in the browser, ensuring **data privacy**â
 
 You can access the application directly via GitHub Pages:
 
-[**Live Demo**]([https://chehrehmi.github.io/Portfolio_Caclulator/])
+[**Live Demo: https://chehrehmi.github.io/Portfolio_Caclulator/**]([https://chehrehmi.github.io/Portfolio_Caclulator/])
 
 ### Local Setup
 
