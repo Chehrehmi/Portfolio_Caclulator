@@ -63,15 +63,15 @@ You can access the application directly via GitHub Pages:
 
 No installation is required! Just open the `index.html` file in any modern web browser.
 
-1.  Clone the repository:
+1. Clone the repository:
     ```bash
-    git clone [https://github.com/yourusername/ira-performance-calculator.git](https://github.com/yourusername/ira-performance-calculator.git)
+    git clone [https://github.com/Chehrehmi/Portfolio_Caclulator.git](https://github.com/Chehrehmi/Portfolio_Caclulator.git)
     ```
-2.  Navigate to the project directory:
+2. Navigate to the project directory:
     ```bash
-    cd ira-performance-calculator
+    cd Portfolio_Caclulator
     ```
-3.  Open `index.html` in your browser.
+3. Open `index.html` in your browser.
 
 ### How to Use
 
