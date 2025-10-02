@@ -110,7 +110,7 @@ Contributions are always welcome! Feel free to fork the repository and submit a 
 
 | Platform | Handle |
 | :--- | :--- |
-| **GitHub** | [@yourusername](https://github.com/Chehrehmi/) |
+| **GitHub** | [@https://github.com/Chehrehmi/](https://github.com/Chehrehmi/) |
 | **Email** | jeremymathewjose@gmail.com |
 
 If you find this tool useful, please **star the repo** or share your feedback! 🚀
