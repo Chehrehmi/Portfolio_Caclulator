@@ -35,6 +35,7 @@ The app runs **entirely client-side** in the browser, ensuring **data privacy**â
 
 ### Charts and Insights
 ![Visualizations1](insights&charts1.png)
+![Visualizations2](insights&charts2.png)
 
 ### Formula Breakdown
 ![Formulas Section](formula-breakdown.png)
